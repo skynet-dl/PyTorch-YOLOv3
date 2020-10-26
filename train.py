@@ -22,6 +22,9 @@ from torchvision import transforms
 from torch.autograd import Variable
 import torch.optim as optim
 
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--epochs", type=int, default=100, help="number of epochs")
@@ -42,6 +45,7 @@ if __name__ == "__main__":
     logger = Logger("logs")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    torch.set_num_threads(16)
 
     os.makedirs("output", exist_ok=True)
     os.makedirs("checkpoints", exist_ok=True)
@@ -147,7 +151,7 @@ if __name__ == "__main__":
 
             model.seen += imgs.size(0)
 
-        if epoch % opt.evaluation_interval == 0:
+        if (epoch != 0) and (epoch % opt.evaluation_interval == 0):
             print("\n---- Evaluating Model ----")
             # Evaluate the model on the validation set
             precision, recall, AP, f1, ap_class = evaluate(
@@ -174,5 +178,5 @@ if __name__ == "__main__":
             print(AsciiTable(ap_table).table)
             print(f"---- mAP {AP.mean()}")
 
-        if epoch % opt.checkpoint_interval == 0:
-            torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_%d.pth" % epoch)
+        if (epoch != 0) and (epoch % opt.evaluation_interval == 0):
+            torch.save(model.state_dict(), f"checkpoints/yolov3_ckpt_{epoch}d.pth")
