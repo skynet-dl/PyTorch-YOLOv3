@@ -1,10 +1,11 @@
+from datetime import datetime
 import tensorflow as tf
 
 
 class Logger(object):
     def __init__(self, log_dir):
         """Create a summary writer logging to log_dir."""
-        self.writer = tf.summary.create_file_writer(log_dir)
+        self.writer = tf.summary.create_file_writer(log_dir + "/" + datetime.now().strftime("%d-%m-%Y-%H-%M-%S"))
 
     def scalar_summary(self, tag, value, step):
         """Log a scalar variable."""
