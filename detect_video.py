@@ -22,6 +22,8 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from matplotlib.ticker import NullLocator
 
+from timeit import default_timer as timer
+
 
 def changeBGR2RGB(img):
     b = img[:, :, 0].copy()
@@ -53,9 +55,9 @@ def changeRGB2BGR(img):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image_folder", type=str, default="data/samples", help="path to dataset")
-    parser.add_argument("--vedio_file", type=str, default="../video/videoplayback2.mp4", help="path to dataset")
+    parser.add_argument("--vedio_file", type=str, default="../video/videoplayback3.mp4", help="path to dataset")
     parser.add_argument("--model_def", type=str, default="config/yolov3-custom.cfg", help="path to model definition file")
-    parser.add_argument("--weights_path", type=str, default="./yolov3_ckpt_100d.pth", help="path to weights file")
+    parser.add_argument("--weights_path", type=str, default="./yolov3_ckpt_200d.pth", help="path to weights file")
     parser.add_argument("--class_path", type=str, default="config/custom.names", help="path to class label file")
     parser.add_argument("--conf_thres", type=float, default=0.8, help="object confidence threshold")
     parser.add_argument("--nms_thres", type=float, default=0.1, help="iou thresshold for non-maximum suppression")
@@ -116,9 +118,12 @@ if __name__ == "__main__":
         #下面再预测就可以了
         #展示一下吧
 
+        start = timer()
         with torch.no_grad():
             detections = model(imgTensor)
             detections = non_max_suppression(detections, opt.conf_thres, opt.nms_thres)
+        end = timer()
+        print(f"exec time = {end - start}")
 
         a.clear()
         if detections is not None:
@@ -143,8 +148,8 @@ if __name__ == "__main__":
             #print()
             #print()
         #cv2.putText(img,"Hello World!",(400,50),cv2.FONT_HERSHEY_PLAIN,2.0,(0,0,255),2)
-        out.write(RGBimg)
-        cv2.imshow('frame', changeRGB2BGR(RGBimg))
+        out.write(changeRGB2BGR(RGBimg))
+        cv2.imshow('frame', RGBimg)
         #cv2.waitKey(0)
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
