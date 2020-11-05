@@ -50,8 +50,6 @@ def changeRGB2BGR(img):
 
     return img
 
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--image_folder", type=str, default="data/samples", help="path to dataset")
@@ -83,7 +81,6 @@ if __name__ == "__main__":
 
     # Define the codec and create VideoWriter object
     out = cv2.VideoWriter('output.avi', cv2.VideoWriter_fourcc('M','J','P','G'), 20.0, (640,360))
-    # out = cv2.VideoWriter('./output.mp4', -1, 20.0, (640, 360))
 
     colors = np.random.randint(0, 255, size=(len(classes), 3), dtype="uint8")
     a=[]
@@ -96,27 +93,13 @@ if __name__ == "__main__":
             break
         # img = cv2.resize(img, (1280, 960), interpolation=cv2.INTER_CUBIC)
 
-        #PILimg = np.array(Image.fromarray(cv2.cvtColor(img,cv2.COLOR_BGR2RGB)))
-        #imgTensor = transforms.ToTensor()(PILimg)
-        #基于pytorch的yolov3 从github拉的
-        # yolov3如何改进成可以对视频进行实时分析
-        #以下的代码可以在utils的文件里找到 是在data loader里面对数据进行处理的，那么也可以把代码直接复制过来用
-        #需要注意的是 PIL读取的图片是RGB的 这里的图片是BGR的 是opencv读取的
-        #进行转换
-        #转换使用自己写的函数
-        #前面的都很简单 都是从detect的代码复制过来的，加了一个打开视频cap
-        #然后有很多人的疑问就是代码直接拉过来不知道怎么改，不知道图片怎么改成张量
-        #但是这个img转化之后缺少一个维度
         RGBimg=changeBGR2RGB(img)
         imgTensor = transforms.ToTensor()(RGBimg)
         imgTensor, _ = pad_to_square(imgTensor, 0)
         imgTensor = resize(imgTensor, 416)
-        #需要用这个unsqueeze去转化
-        #是看了莫烦的机器学习想到的 结合报错信息
+
         imgTensor = imgTensor.unsqueeze(0)
         imgTensor = Variable(imgTensor.type(Tensor))
-        #下面再预测就可以了
-        #展示一下吧
 
         start = timer()
         with torch.no_grad():
@@ -139,18 +122,14 @@ if __name__ == "__main__":
                         box_w = x2 - x1
                         box_h = y2 - y1
                         color = [int(c) for c in colors[int(cls_pred)]]
-                        #print(cls_conf)
                         img = cv2.rectangle(img, (int(x1), int(y1 + box_h)), (int(x2), int(y1)), color, 2)
                         cv2.putText(img, classes[int(cls_pred)], (int(x1), int(y1)), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                         cv2.putText(img, str("%.2f" % float(conf)), (int(x2), int(y2 - box_h)), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                                     color, 2)
 
-            #print()
-            #print()
         #cv2.putText(img,"Hello World!",(400,50),cv2.FONT_HERSHEY_PLAIN,2.0,(0,0,255),2)
         out.write(changeRGB2BGR(RGBimg))
         cv2.imshow('frame', RGBimg)
-        #cv2.waitKey(0)
 
         if cv2.waitKey(25) & 0xFF == ord('q'):
             break
